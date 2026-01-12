@@ -12,7 +12,7 @@ ALZ-CARE is a multi-agent artificial intelligence platform designed to support c
 ### Demo Mode
 The current version runs in demo mode with sample patient data (Eleanor Mitchell). All features are fully interactive for testing and demonstration purposes.
 
-Demo Link: https://imranmithu.github.io/Alzheimer-s-Care-App/
+Demo Link:https://imranmithu.github.io/ALZ_Care_-Agentic-AI/
 ---
 
 ## 📋 Table of Contents
