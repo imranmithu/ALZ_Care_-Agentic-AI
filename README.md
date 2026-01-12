@@ -9,7 +9,7 @@
 
 ALZ-CARE is a multi-agent artificial intelligence platform designed to support caregivers of individuals with Alzheimer's Disease and Related Dementias (ADRD), particularly in rural and underserved communities. The system integrates environmental monitoring, wearable vital signs, telemedicine interoperability, and community resources through five specialized AI agents coordinated by a central orchestration layer.
 
-![ALZ-CARE Dashboard](assets/dashboard-preview.svg)
+![ALZ-CARE Dashboard](https://imranmithu.github.io/ALZ_Care_-Agentic-AI/)
 
 ---
 
@@ -453,26 +453,8 @@ copies of the Software...
 ## 🙏 Acknowledgments
 
 ### Research Team
-- Principal Investigator: [Your Name]
-- Co-Investigators: [Names]
-- Community Partners: [Organizations]
-
-### Funding
-This project is supported by [Funding Source] under Award No. [XXX].
-
-### Special Thanks
-- Rural caregivers who shared their experiences
-- Community health workers for their invaluable input
-- [University/Organization] for institutional support
-
----
-
-## 📞 Contact
-
-- **Project Website**: [https://alz-care.org](https://alz-care.org)
-- **Email**: contact@alz-care.org
-- **Twitter**: [@ALZ_CARE](https://twitter.com/ALZ_CARE)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/alz-care/issues)
+- Principal Investigator: [Imran Hossain Mithu]
+- Co-Investigators: [Onicio Leal Neto]
 
 ---
 
