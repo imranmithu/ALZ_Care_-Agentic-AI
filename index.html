@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALZ-CARE: Adaptive Resilience Ecosystem</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-card: #1a2332;
+            --bg-card-hover: #232f42;
+            --accent-teal: #14b8a6;
+            --accent-teal-glow: rgba(20, 184, 166, 0.3);
+            --accent-coral: #f97066;
+            --accent-amber: #fbbf24;
+            --accent-violet: #a78bfa;
+            --accent-sky: #38bdf8;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: rgba(148, 163, 184, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+        .bg-mesh { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(at 20% 80%, rgba(20, 184, 166, 0.15) 0%, transparent 50%), radial-gradient(at 80% 20%, rgba(167, 139, 250, 0.1) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+        
+        .header { position: relative; z-index: 10; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: rgba(10, 15, 26, 0.9); backdrop-filter: blur(20px); }
+        .logo { display: flex; align-items: center; gap: 1rem; }
+        .logo-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent-teal), var(--accent-sky)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; animation: logoPulse 3s ease-in-out infinite; }
+        @keyframes logoPulse { 0%, 100% { box-shadow: 0 0 20px var(--accent-teal-glow); } 50% { box-shadow: 0 0 40px var(--accent-teal-glow), 0 0 60px rgba(56, 189, 248, 0.2); } }
+        .logo-text h1 { font-family: 'Fraunces', serif; font-size: 1.4rem; background: linear-gradient(135deg, var(--text-primary), var(--accent-teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-text span { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+        .header-center { display: flex; align-items: center; gap: 1.5rem; }
+        .status-pill { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(20, 184, 166, 0.3); border-radius: 100px; font-size: 0.8rem; color: var(--accent-teal); }
+        .status-dot { width: 8px; height: 8px; background: var(--accent-teal); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+        .datetime { font-size: 0.8rem; color: var(--text-secondary); }
+        .user-info { display: flex; align-items: center; gap: 0.75rem; }
+        .user-avatar { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent-coral), var(--accent-amber)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; }
+        .user-name { font-weight: 600; font-size: 0.85rem; }
+        .user-role { font-size: 0.7rem; color: var(--text-muted); }
+
+        .main-container { position: relative; z-index: 1; padding: 1.5rem 2rem 6rem; max-width: 1600px; margin: 0 auto; }
+        
+        /* Live Activity Feed */
+        .live-feed-banner { background: linear-gradient(90deg, rgba(20, 184, 166, 0.1), rgba(167, 139, 250, 0.1), rgba(56, 189, 248, 0.1)); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; overflow: hidden; }
+        .live-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--accent-coral); }
+        .live-dot { width: 10px; height: 10px; background: var(--accent-coral); border-radius: 50%; animation: livePulse 1s infinite; }
+        @keyframes livePulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(249, 112, 102, 0.5); } 50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(249, 112, 102, 0); } }
+        .feed-scroll { flex: 1; overflow: hidden; }
+        .feed-content { display: flex; gap: 3rem; animation: scrollFeed 30s linear infinite; white-space: nowrap; }
+        @keyframes scrollFeed { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .feed-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+        .feed-item .agent-tag { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+        .feed-item .agent-tag.env { background: rgba(20, 184, 166, 0.2); color: var(--accent-teal); }
+        .feed-item .agent-tag.vitals { background: rgba(249, 112, 102, 0.2); color: var(--accent-coral); }
+        .feed-item .agent-tag.care { background: rgba(167, 139, 250, 0.2); color: var(--accent-violet); }
+        .feed-item .agent-tag.tele { background: rgba(56, 189, 248, 0.2); color: var(--accent-sky); }
+        .feed-item .agent-tag.comm { background: rgba(251, 191, 36, 0.2); color: var(--accent-amber); }
+
+        .patient-banner { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .patient-info-left { display: flex; align-items: center; gap: 1rem; }
+        .patient-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent-violet), var(--accent-sky)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; position: relative; }
+        .patient-avatar::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--accent-teal); border-top-color: transparent; animation: avatarSpin 3s linear infinite; }
+        @keyframes avatarSpin { to { transform: rotate(360deg); } }
+        .patient-details h2 { font-family: 'Fraunces', serif; font-size: 1.25rem; }
+        .patient-meta { font-size: 0.8rem; color: var(--text-secondary); }
+        .patient-stats-row { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .patient-stat { text-align: center; }
+        .patient-stat-value { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; color: var(--accent-teal); }
+        .patient-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+        .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .agent-panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; position: relative; }
+        .agent-panel.large { grid-column: span 2; }
+        @media (max-width: 900px) { .agent-panel.large { grid-column: span 1; } }
+        
+        /* Agent Activity Indicator */
+        .agent-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.3s; }
+        .agent-panel.active::before { opacity: 1; animation: agentPulse 2s ease-in-out; }
+        .agent-panel[data-agent="environmental"]::before { background: linear-gradient(90deg, transparent, var(--accent-teal), transparent); }
+        .agent-panel[data-agent="vitals"]::before { background: linear-gradient(90deg, transparent, var(--accent-coral), transparent); }
+        .agent-panel[data-agent="caregiver"]::before { background: linear-gradient(90deg, transparent, var(--accent-violet), transparent); }
+        .agent-panel[data-agent="telemedicine"]::before { background: linear-gradient(90deg, transparent, var(--accent-sky), transparent); }
+        .agent-panel[data-agent="community"]::before { background: linear-gradient(90deg, transparent, var(--accent-amber), transparent); }
+        @keyframes agentPulse { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+        .agent-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); }
+        .agent-title { display: flex; align-items: center; gap: 0.75rem; }
+        .agent-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: transform 0.3s, box-shadow 0.3s; }
+        .agent-panel.active .agent-icon { transform: scale(1.1); }
+        .agent-panel[data-agent="environmental"] .agent-icon { background: rgba(20, 184, 166, 0.2); }
+        .agent-panel[data-agent="vitals"] .agent-icon { background: rgba(249, 112, 102, 0.2); }
+        .agent-panel[data-agent="caregiver"] .agent-icon { background: rgba(167, 139, 250, 0.2); }
+        .agent-panel[data-agent="telemedicine"] .agent-icon { background: rgba(56, 189, 248, 0.2); }
+        .agent-panel[data-agent="community"] .agent-icon { background: rgba(251, 191, 36, 0.2); }
+        .agent-panel.active[data-agent="environmental"] .agent-icon { box-shadow: 0 0 20px var(--accent-teal); }
+        .agent-panel.active[data-agent="vitals"] .agent-icon { box-shadow: 0 0 20px var(--accent-coral); }
+        .agent-panel.active[data-agent="caregiver"] .agent-icon { box-shadow: 0 0 20px var(--accent-violet); }
+        .agent-panel.active[data-agent="telemedicine"] .agent-icon { box-shadow: 0 0 20px var(--accent-sky); }
+        .agent-panel.active[data-agent="community"] .agent-icon { box-shadow: 0 0 20px var(--accent-amber); }
+        
+        .agent-panel[data-agent="environmental"] { border-top: 3px solid var(--accent-teal); }
+        .agent-panel[data-agent="vitals"] { border-top: 3px solid var(--accent-coral); }
+        .agent-panel[data-agent="caregiver"] { border-top: 3px solid var(--accent-violet); }
+        .agent-panel[data-agent="telemedicine"] { border-top: 3px solid var(--accent-sky); }
+        .agent-panel[data-agent="community"] { border-top: 3px solid var(--accent-amber); }
+        .agent-name { font-weight: 600; font-size: 0.95rem; }
+        .agent-status-badge { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.6rem; border-radius: 100px; font-size: 0.7rem; background: rgba(20, 184, 166, 0.15); color: var(--accent-teal); }
+        .status-indicator { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-teal); animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .agent-content { padding: 1.25rem; }
+
+        /* Activity Log in each agent */
+        .agent-activity-log { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.75rem; margin-top: 1rem; max-height: 100px; overflow-y: auto; }
+        .activity-item { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.4rem 0; font-size: 0.75rem; border-bottom: 1px solid var(--border-color); animation: fadeIn 0.5s ease; }
+        .activity-item:last-child { border-bottom: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .activity-time { color: var(--text-muted); font-size: 0.65rem; white-space: nowrap; }
+        .activity-text { color: var(--text-secondary); flex: 1; }
+
+        .env-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .env-metric { background: rgba(0, 0, 0, 0.2); padding: 0.875rem; border-radius: 10px; transition: all 0.3s; }
+        .env-metric.updating { background: rgba(20, 184, 166, 0.1); box-shadow: 0 0 15px rgba(20, 184, 166, 0.2); }
+        .env-metric-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+        .env-metric-value { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; color: var(--accent-teal); transition: all 0.3s; }
+        .env-metric.updating .env-metric-value { transform: scale(1.05); }
+        .env-metric-status { font-size: 0.75rem; color: var(--text-secondary); }
+        .env-alert { display: flex; gap: 0.75rem; padding: 0.875rem; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; font-size: 0.8rem; color: var(--text-secondary); }
+
+        .vitals-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .vital-card { background: rgba(0, 0, 0, 0.2); padding: 0.875rem; border-radius: 10px; position: relative; transition: all 0.3s; }
+        .vital-card.updating { background: rgba(249, 112, 102, 0.1); box-shadow: 0 0 15px rgba(249, 112, 102, 0.2); }
+        .vital-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--accent-teal); }
+        .vital-card.warning::after { background: var(--accent-amber); }
+        .vital-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+        .vital-label { font-size: 0.75rem; color: var(--text-muted); }
+        .vital-value { font-family: 'Fraunces', serif; font-size: 1.75rem; font-weight: 700; color: var(--accent-teal); transition: all 0.3s; }
+        .vital-card.updating .vital-value { transform: scale(1.05); }
+        .vital-card.warning .vital-value { color: var(--accent-amber); }
+        .vital-unit { font-size: 0.8rem; color: var(--text-secondary); font-weight: 400; }
+        .vital-trend { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* Heart Rate Chart */
+        .hr-chart { height: 60px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 0.5rem; display: flex; align-items: flex-end; gap: 2px; overflow: hidden; }
+        .hr-bar { width: 8px; background: linear-gradient(to top, var(--accent-coral), rgba(249, 112, 102, 0.3)); border-radius: 2px; transition: height 0.5s ease; }
+
+        .copilot-message { display: flex; gap: 0.75rem; padding: 1rem; background: rgba(167, 139, 250, 0.1); border-radius: 12px; border-left: 3px solid var(--accent-violet); margin-bottom: 1rem; position: relative; overflow: hidden; }
+        .copilot-avatar { width: 32px; height: 32px; background: var(--accent-violet); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+        .copilot-text { font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); }
+        .copilot-text strong { color: var(--text-primary); }
+        .typing-indicator { display: inline-flex; gap: 4px; margin-left: 8px; }
+        .typing-dot { width: 6px; height: 6px; background: var(--accent-violet); border-radius: 50%; animation: typingBounce 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+        .copilot-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .copilot-btn { padding: 0.5rem 1rem; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem; }
+        .copilot-btn:hover { background: var(--accent-violet); border-color: var(--accent-violet); }
+        .language-selector { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: rgba(0, 0, 0, 0.2); border-radius: 8px; }
+        .lang-label { font-size: 0.75rem; color: var(--text-muted); }
+        .lang-btn { padding: 0.35rem 0.75rem; background: transparent; border: none; border-radius: 6px; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
+        .lang-btn.active { background: var(--accent-violet); color: white; }
+
+        .tele-sync-status { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: rgba(56, 189, 248, 0.1); border-radius: 10px; margin-bottom: 1rem; }
+        .sync-icon { font-size: 1.25rem; animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .sync-text { font-size: 0.85rem; }
+        .sync-text strong { color: var(--accent-sky); }
+        .provider-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(0, 0, 0, 0.2); border-radius: 8px; margin-bottom: 0.5rem; }
+        .provider-info { display: flex; align-items: center; gap: 0.75rem; }
+        .provider-icon { width: 32px; height: 32px; background: rgba(56, 189, 248, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .provider-name { font-size: 0.85rem; font-weight: 500; }
+        .provider-type { font-size: 0.7rem; color: var(--text-muted); }
+        .provider-status { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(20, 184, 166, 0.2); color: var(--accent-teal); }
+        .data-packets { display: flex; justify-content: center; gap: 0.5rem; padding: 0.5rem; margin-top: 0.5rem; }
+        .packet { width: 8px; height: 8px; background: var(--accent-sky); border-radius: 50%; animation: packetMove 2s ease-in-out infinite; opacity: 0; }
+        .packet:nth-child(1) { animation-delay: 0s; }
+        .packet:nth-child(2) { animation-delay: 0.3s; }
+        .packet:nth-child(3) { animation-delay: 0.6s; }
+        .packet:nth-child(4) { animation-delay: 0.9s; }
+        .packet:nth-child(5) { animation-delay: 1.2s; }
+        @keyframes packetMove { 0% { opacity: 0; transform: translateX(-30px); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(30px); } }
+
+        .chw-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; margin-bottom: 1rem; }
+        .chw-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent-amber), var(--accent-coral)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .chw-info { flex: 1; }
+        .chw-name { font-weight: 600; font-size: 0.9rem; }
+        .chw-role { font-size: 0.75rem; color: var(--text-secondary); }
+        .chw-contact { padding: 0.5rem 1rem; background: var(--accent-amber); border: none; border-radius: 8px; color: var(--bg-primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .resource-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(0, 0, 0, 0.2); border-radius: 10px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s; }
+        .resource-item:hover { background: rgba(251, 191, 36, 0.1); transform: translateX(4px); }
+        .resource-info { display: flex; align-items: center; gap: 0.75rem; }
+        .resource-icon { width: 36px; height: 36px; background: rgba(251, 191, 36, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .resource-name { font-size: 0.85rem; font-weight: 500; }
+        .resource-type { font-size: 0.7rem; color: var(--text-muted); }
+        .resource-distance { font-size: 0.75rem; color: var(--accent-amber); }
+
+        /* Enhanced Orchestration Bar */
+        .orchestration-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border-color); z-index: 100; padding: 0.75rem 2rem; }
+        .orch-main { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .orch-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-right: 1rem; }
+        .orch-node { display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: rgba(0, 0, 0, 0.3); border-radius: 100px; font-size: 0.75rem; transition: all 0.3s; cursor: pointer; }
+        .orch-node.active { transform: scale(1.1); }
+        .orch-node[data-agent="environmental"].active { background: rgba(20, 184, 166, 0.3); box-shadow: 0 0 15px var(--accent-teal); }
+        .orch-node[data-agent="vitals"].active { background: rgba(249, 112, 102, 0.3); box-shadow: 0 0 15px var(--accent-coral); }
+        .orch-node[data-agent="caregiver"].active { background: rgba(167, 139, 250, 0.3); box-shadow: 0 0 15px var(--accent-violet); }
+        .orch-node[data-agent="telemedicine"].active { background: rgba(56, 189, 248, 0.3); box-shadow: 0 0 15px var(--accent-sky); }
+        .orch-node[data-agent="community"].active { background: rgba(251, 191, 36, 0.3); box-shadow: 0 0 15px var(--accent-amber); }
+        .orch-dot { width: 8px; height: 8px; border-radius: 50%; transition: all 0.3s; }
+        .orch-node[data-agent="environmental"] .orch-dot { background: var(--accent-teal); }
+        .orch-node[data-agent="vitals"] .orch-dot { background: var(--accent-coral); }
+        .orch-node[data-agent="caregiver"] .orch-dot { background: var(--accent-violet); }
+        .orch-node[data-agent="telemedicine"] .orch-dot { background: var(--accent-sky); }
+        .orch-node[data-agent="community"] .orch-dot { background: var(--accent-amber); }
+        .orch-connector { width: 30px; height: 2px; background: var(--border-color); position: relative; overflow: hidden; }
+        .orch-connector.active { background: linear-gradient(90deg, var(--accent-teal), var(--accent-sky)); }
+        .orch-connector.active::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, white, transparent); animation: dataStream 1s linear infinite; }
+        @keyframes dataStream { to { left: 200%; } }
+        .orch-activity { display: flex; justify-content: center; gap: 2rem; font-size: 0.7rem; color: var(--text-muted); }
+        .orch-stat { display: flex; align-items: center; gap: 0.4rem; }
+        .orch-stat-value { color: var(--accent-teal); font-weight: 600; }
+
+        /* Toast Notifications */
+        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast { padding: 0.75rem 1rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; animation: toastIn 0.5s ease, toastOut 0.5s ease 4.5s forwards; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 350px; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
+        .toast-icon { font-size: 1.25rem; }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 600; margin-bottom: 0.15rem; }
+        .toast-text { color: var(--text-secondary); font-size: 0.75rem; }
+        .toast.env { border-left: 3px solid var(--accent-teal); }
+        .toast.vitals { border-left: 3px solid var(--accent-coral); }
+        .toast.care { border-left: 3px solid var(--accent-violet); }
+        .toast.tele { border-left: 3px solid var(--accent-sky); }
+        .toast.comm { border-left: 3px solid var(--accent-amber); }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow: hidden; transform: scale(0.9); transition: all 0.3s; }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.2); }
+        .modal-title { display: flex; align-items: center; gap: 0.75rem; font-family: 'Fraunces', serif; font-size: 1.25rem; }
+        .modal-close { width: 36px; height: 36px; background: rgba(255, 255, 255, 0.1); border: none; border-radius: 10px; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: var(--accent-coral); }
+        .modal-content { padding: 1.5rem; overflow-y: auto; max-height: calc(85vh - 80px); }
+        .modal-section { margin-bottom: 1.5rem; }
+        .modal-section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-violet); margin-bottom: 0.75rem; font-weight: 600; }
+        .modal-card { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; }
+        .modal-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .modal-card-title { font-weight: 600; font-size: 0.95rem; }
+        .modal-card-badge { padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.7rem; }
+        .modal-card-badge.good { background: rgba(20, 184, 166, 0.2); color: var(--accent-teal); }
+        .modal-card-badge.warning { background: rgba(251, 191, 36, 0.2); color: var(--accent-amber); }
+        .modal-card-badge.info { background: rgba(56, 189, 248, 0.2); color: var(--accent-sky); }
+        .modal-card-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+        .tip-card { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(56, 189, 248, 0.1)); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .tip-time { font-size: 0.75rem; color: var(--accent-violet); font-weight: 600; margin-left: 0.5rem; }
+        .tip-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-top: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .form-select, .form-textarea { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.875rem 1rem; color: var(--text-primary); font-size: 0.9rem; font-family: inherit; }
+        .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent-violet); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .form-submit { width: 100%; padding: 1rem; background: var(--accent-violet); border: none; border-radius: 10px; color: white; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        .form-submit:hover { opacity: 0.9; }
+        .education-topic { background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; cursor: pointer; transition: all 0.2s; }
+        .education-topic:hover { background: rgba(167, 139, 250, 0.1); }
+        .education-topic-header { display: flex; justify-content: space-between; align-items: center; }
+        .education-topic-title { display: flex; align-items: center; gap: 0.75rem; font-weight: 600; }
+        .education-topic-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; margin-left: 2rem; }
+        .emergency-card { background: rgba(249, 112, 102, 0.1); border: 1px solid rgba(249, 112, 102, 0.3); border-radius: 12px; padding: 1rem; color: var(--accent-coral); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-text">
+                <h1>ALZ-CARE</h1>
+                <span data-i18n="subtitle">Adaptive Resilience Ecosystem</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="status-pill"><div class="status-dot"></div><span data-i18n="agentsActive">5 Agents Active</span></div>
+            <div class="datetime" id="datetime"></div>
+        </div>
+        <div class="user-info">
+            <div><div class="user-name">Maria Santos</div><div class="user-role" data-i18n="caregiver">Primary Caregiver</div></div>
+            <div class="user-avatar">MS</div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Live Activity Feed -->
+        <div class="live-feed-banner">
+            <div class="live-indicator"><div class="live-dot"></div>LIVE</div>
+            <div class="feed-scroll">
+                <div class="feed-content" id="feedContent">
+                    <div class="feed-item"><span class="agent-tag env">ENV</span> Air quality updated: AQI 42</div>
+                    <div class="feed-item"><span class="agent-tag vitals">VITALS</span> Heart rate: 72 bpm</div>
+                    <div class="feed-item"><span class="agent-tag tele">TELE</span> FHIR sync completed</div>
+                    <div class="feed-item"><span class="agent-tag care">CARE</span> Recommendation generated</div>
+                    <div class="feed-item"><span class="agent-tag comm">COMM</span> 3 resources available nearby</div>
+                    <div class="feed-item"><span class="agent-tag env">ENV</span> Heat index: 94°F - Caution</div>
+                    <div class="feed-item"><span class="agent-tag vitals">VITALS</span> Sleep score analyzed: 68/100</div>
+                    <div class="feed-item"><span class="agent-tag tele">TELE</span> Dr. Chen visit in 2 days</div>
+                    <!-- Duplicate for seamless scroll -->
+                    <div class="feed-item"><span class="agent-tag env">ENV</span> Air quality updated: AQI 42</div>
+                    <div class="feed-item"><span class="agent-tag vitals">VITALS</span> Heart rate: 72 bpm</div>
+                    <div class="feed-item"><span class="agent-tag tele">TELE</span> FHIR sync completed</div>
+                    <div class="feed-item"><span class="agent-tag care">CARE</span> Recommendation generated</div>
+                    <div class="feed-item"><span class="agent-tag comm">COMM</span> 3 resources available nearby</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="patient-banner">
+            <div class="patient-info-left">
+                <div class="patient-avatar">👴</div>
+                <div class="patient-details">
+                    <h2>Robert Santos</h2>
+                    <div class="patient-meta" data-i18n="patientInfo">78 years old • Stage 5 ADRD • Monitoring since March 2024</div>
+                </div>
+            </div>
+            <div class="patient-stats-row">
+                <div class="patient-stat"><div class="patient-stat-value" id="daysTracked">847</div><div class="patient-stat-label" data-i18n="daysTracked">Days Tracked</div></div>
+                <div class="patient-stat"><div class="patient-stat-value">94%</div><div class="patient-stat-label" data-i18n="routineScore">Routine Score</div></div>
+                <div class="patient-stat"><div class="patient-stat-value" id="alertCount">12</div><div class="patient-stat-label" data-i18n="alertsWeek">Alerts This Week</div></div>
+                <div class="patient-stat"><div class="patient-stat-value" id="dataPoints">0</div><div class="patient-stat-label">Data Points Today</div></div>
+            </div>
+        </div>
+
+        <div class="agents-grid">
+            <!-- Environmental Agent -->
+            <div class="agent-panel" data-agent="environmental" id="envPanel">
+                <div class="agent-header">
+                    <div class="agent-title"><div class="agent-icon">🌡️</div><div class="agent-name" data-i18n="envAgent">Environmental Sentinel</div></div>
+                    <div class="agent-status-badge"><span class="status-indicator"></span><span id="envStatus" data-i18n="monitoring">Monitoring</span></div>
+                </div>
+                <div class="agent-content">
+                    <div class="env-metrics">
+                        <div class="env-metric" id="aqiMetric"><div class="env-metric-label" data-i18n="airQuality">Air Quality</div><div class="env-metric-value" id="aqiValue">42</div><div class="env-metric-status" id="aqiStatus" data-i18n="good">Good</div></div>
+                        <div class="env-metric" id="heatMetric"><div class="env-metric-label" data-i18n="heatIndex">Heat Index</div><div class="env-metric-value" id="heatValue">94°F</div><div class="env-metric-status" id="heatStatus" data-i18n="caution">Caution</div></div>
+                        <div class="env-metric" id="uvMetric"><div class="env-metric-label" data-i18n="uvIndex">UV Index</div><div class="env-metric-value" id="uvValue">7</div><div class="env-metric-status" id="uvStatus" data-i18n="high">High</div></div>
+                        <div class="env-metric" id="pollenMetric"><div class="env-metric-label" data-i18n="pollen">Pollen</div><div class="env-metric-value" data-i18n="low">Low</div><div class="env-metric-status" data-i18n="favorable">Favorable</div></div>
+                    </div>
+                    <div class="env-alert"><span>⚠️</span><span id="envAlert" data-i18n="heatAlert"><strong>Heat Advisory:</strong> Temperature peaks at 3pm. Recommend indoor activities 1-5pm.</span></div>
+                    <div class="agent-activity-log" id="envLog"></div>
+                </div>
+            </div>
+
+            <!-- Vitals Agent -->
+            <div class="agent-panel" data-agent="vitals" id="vitalsPanel">
+                <div class="agent-header">
+                    <div class="agent-title"><div class="agent-icon">❤️</div><div class="agent-name" data-i18n="vitalsAgent">Vital Signs Monitor</div></div>
+                    <div class="agent-status-badge"><span class="status-indicator"></span><span id="vitalsStatus" data-i18n="streaming">Streaming</span></div>
+                </div>
+                <div class="agent-content">
+                    <div class="vitals-grid">
+                        <div class="vital-card" id="hrCard"><div class="vital-header"><div class="vital-label" data-i18n="heartRate">Heart Rate</div><span>❤️</span></div><div class="vital-value" id="hrValue">72 <span class="vital-unit">bpm</span></div><div class="vital-trend" id="hrTrend">↓ 3% from yesterday</div></div>
+                        <div class="vital-card" id="hrvCard"><div class="vital-header"><div class="vital-label">HRV</div><span>📊</span></div><div class="vital-value" id="hrvValue">45 <span class="vital-unit">ms</span></div><div class="vital-trend" data-i18n="stable">Stable range</div></div>
+                        <div class="vital-card warning" id="sleepCard"><div class="vital-header"><div class="vital-label" data-i18n="sleepScore">Sleep Score</div><span>😴</span></div><div class="vital-value" id="sleepValue">68<span class="vital-unit">/100</span></div><div class="vital-trend" data-i18n="wakeEpisodes">2 wake episodes</div></div>
+                        <div class="vital-card" id="stepsCard"><div class="vital-header"><div class="vital-label" data-i18n="activity">Activity</div><span>🚶</span></div><div class="vital-value" id="stepsValue">2.8k <span class="vital-unit" data-i18n="steps">steps</span></div><div class="vital-trend" data-i18n="onTrack">On track</div></div>
+                    </div>
+                    <div class="hr-chart" id="hrChart"></div>
+                    <div class="agent-activity-log" id="vitalsLog"></div>
+                </div>
+            </div>
+
+            <!-- Caregiver Agent -->
+            <div class="agent-panel large" data-agent="caregiver" id="carePanel">
+                <div class="agent-header">
+                    <div class="agent-title"><div class="agent-icon">💬</div><div class="agent-name" data-i18n="caregiverAgent">Caregiver Navigator</div></div>
+                    <div class="agent-status-badge"><span class="status-indicator"></span><span id="careStatus" data-i18n="ready">Ready</span></div>
+                </div>
+                <div class="agent-content">
+                    <div class="copilot-message">
+                        <div class="copilot-avatar">🤖</div>
+                        <div class="copilot-text" id="copilotText"><strong>Good morning, Maria!</strong> Based on Robert's sleep (68/100) and today's heat advisory, I recommend: <strong>Morning walk before 10am</strong>, hydration every 2 hours, calming afternoon activity. Telemedicine with Dr. Chen in 2 days.<span class="typing-indicator" id="typingIndicator" style="display:none;"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span></div>
+                    </div>
+                    <div class="copilot-actions">
+                        <button class="copilot-btn" onclick="openModal('summary')"><span>📋</span><span data-i18n="viewSummary">View Visit Summary</span></button>
+                        <button class="copilot-btn" onclick="openModal('tips')"><span>💡</span><span data-i18n="careTips">Care Tips for Today</span></button>
+                        <button class="copilot-btn" onclick="openModal('concern')"><span>🆘</span><span data-i18n="reportConcern">Report a Concern</span></button>
+                        <button class="copilot-btn" onclick="openModal('education')"><span>📚</span><span data-i18n="education">ADRD Education</span></button>
+                    </div>
+                    <div class="language-selector">
+                        <span class="lang-label" data-i18n="language">Language:</span>
+                        <button class="lang-btn active" onclick="setLang('en')">English</button>
+                        <button class="lang-btn" onclick="setLang('es')">Español</button>
+                    </div>
+                    <div class="agent-activity-log" id="careLog"></div>
+                </div>
+            </div>
+
+            <!-- Telemedicine Agent -->
+            <div class="agent-panel" data-agent="telemedicine" id="telePanel">
+                <div class="agent-header">
+                    <div class="agent-title"><div class="agent-icon">🏥</div><div class="agent-name" data-i18n="teleAgent">Telemedicine Integration</div></div>
+                    <div class="agent-status-badge"><span class="status-indicator"></span><span id="teleStatus" data-i18n="synced">Synced</span></div>
+                </div>
+                <div class="agent-content">
+                    <div class="tele-sync-status"><span class="sync-icon">🔄</span><div class="sync-text"><strong data-i18n="fhirActive">FHIR Sync Active</strong><br><span style="font-size:0.75rem;color:var(--text-muted)" id="lastSync">Last sync: just now</span></div></div>
+                    <div class="provider-row"><div class="provider-info"><div class="provider-icon">👨‍⚕️</div><div><div class="provider-name">Dr. Sarah Chen</div><div class="provider-type" data-i18n="neurologist">Neurologist • Telehealth</div></div></div><div class="provider-status" data-i18n="connected">Connected</div></div>
+                    <div class="provider-row"><div class="provider-info"><div class="provider-icon">🏥</div><div><div class="provider-name" data-i18n="valleyClinic">Valley Rural Clinic</div><div class="provider-type" data-i18n="primaryCare">Primary Care</div></div></div><div class="provider-status" data-i18n="connected">Connected</div></div>
+                    <div class="data-packets"><div class="packet"></div><div class="packet"></div><div class="packet"></div><div class="packet"></div><div class="packet"></div></div>
+                    <div class="agent-activity-log" id="teleLog"></div>
+                </div>
+            </div>
+
+            <!-- Community Agent -->
+            <div class="agent-panel" data-agent="community" id="commPanel">
+                <div class="agent-header">
+                    <div class="agent-title"><div class="agent-icon">🤝</div><div class="agent-name" data-i18n="communityAgent">Community Connector</div></div>
+                    <div class="agent-status-badge"><span class="status-indicator"></span><span id="commStatus" data-i18n="resources">5 Resources</span></div>
+                </div>
+                <div class="agent-content">
+                    <div class="chw-card"><div class="chw-avatar">👩‍⚕️</div><div class="chw-info"><div class="chw-name">Rosa Martinez</div><div class="chw-role" data-i18n="chwRole">Community Health Worker • Available</div></div><button class="chw-contact" data-i18n="contact">Contact</button></div>
+                    <div class="resource-item"><div class="resource-info"><div class="resource-icon">🏠</div><div><div class="resource-name" data-i18n="respiteCenter">Desert Respite Center</div><div class="resource-type" data-i18n="respiteCare">Respite Care</div></div></div><div class="resource-distance">4.2 mi</div></div>
+                    <div class="resource-item"><div class="resource-info"><div class="resource-icon">❄️</div><div><div class="resource-name" data-i18n="coolingCenter">Community Cooling Center</div><div class="resource-type" data-i18n="heatRelief">Heat Relief</div></div></div><div class="resource-distance">1.8 mi</div></div>
+                    <div class="resource-item"><div class="resource-info"><div class="resource-icon">👥</div><div><div class="resource-name" data-i18n="supportGroup">Caregiver Support Group</div><div class="resource-type" data-i18n="weeklyMeetings">Weekly Meetings</div></div></div><div class="resource-distance" data-i18n="tues6pm">Tues 6pm</div></div>
+                    <div class="agent-activity-log" id="commLog"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="orchestration-bar">
+        <div class="orch-main">
+            <div class="orch-label" data-i18n="orchestration">Agent Orchestration</div>
+            <div class="orch-node" data-agent="environmental" id="orchEnv"><div class="orch-dot"></div>ENV</div>
+            <div class="orch-connector" id="conn1"></div>
+            <div class="orch-node" data-agent="vitals" id="orchVitals"><div class="orch-dot"></div>VITALS</div>
+            <div class="orch-connector" id="conn2"></div>
+            <div class="orch-node" data-agent="caregiver" id="orchCare"><div class="orch-dot"></div>CARE</div>
+            <div class="orch-connector" id="conn3"></div>
+            <div class="orch-node" data-agent="telemedicine" id="orchTele"><div class="orch-dot"></div>TELE</div>
+            <div class="orch-connector" id="conn4"></div>
+            <div class="orch-node" data-agent="community" id="orchComm"><div class="orch-dot"></div>COMM</div>
+        </div>
+        <div class="orch-activity">
+            <div class="orch-stat">Data Points: <span class="orch-stat-value" id="totalDataPoints">0</span></div>
+            <div class="orch-stat">Agent Actions: <span class="orch-stat-value" id="totalActions">0</span></div>
+            <div class="orch-stat">Cross-Agent Events: <span class="orch-stat-value" id="crossEvents">0</span></div>
+            <div class="orch-stat">Uptime: <span class="orch-stat-value" id="uptime">00:00:00</span></div>
+        </div>
+    </div>
+
+    <!-- Modals (same as before) -->
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title"><span>📋</span><span data-i18n="summaryTitle">Telemedicine Visit Summary</span></div><button class="modal-close" onclick="closeModal('summary')">×</button></div>
+            <div class="modal-content">
+                <div class="modal-section"><div class="modal-section-title">Upcoming Visit</div><div class="modal-card"><div class="modal-card-header"><div class="modal-card-title">Dr. Sarah Chen</div><div class="modal-card-badge info">In 2 Days</div></div><div class="modal-card-text">Monday, January 13, 2026 at 2:00 PM via Telehealth</div></div></div>
+                <div class="modal-section"><div class="modal-section-title">This Week's Summary</div><div class="modal-card"><div class="modal-card-header"><div class="modal-card-title">Vital Signs</div><div class="modal-card-badge good">Stable</div></div><div class="modal-card-text">Average heart rate: 71 bpm. HRV stable at 42-48 ms. Sleep averaged 72/100.</div></div><div class="modal-card"><div class="modal-card-header"><div class="modal-card-title">Behavioral Patterns</div><div class="modal-card-badge warning">Noteworthy</div></div><div class="modal-card-text">Mild increase in afternoon agitation correlating with heat advisory days.</div></div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="tipsModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title"><span>💡</span><span>Care Tips for Today</span></div><button class="modal-close" onclick="closeModal('tips')">×</button></div>
+            <div class="modal-content">
+                <div class="tip-card"><div><span>🌅</span><span class="tip-time">MORNING (7-10 AM)</span></div><div class="tip-text">Best time for outdoor activity. Consider 15-20 min garden walk.</div></div>
+                <div class="tip-card"><div><span>☀️</span><span class="tip-time">MIDDAY (10 AM - 1 PM)</span></div><div class="tip-text">Transition indoors. Try family photos or favorite music.</div></div>
+                <div class="tip-card"><div><span>🔥</span><span class="tip-time">AFTERNOON (1-5 PM)</span></div><div class="tip-text"><strong>Heat Advisory:</strong> Keep Robert indoors with AC.</div></div>
+                <div class="tip-card"><div><span>🌙</span><span class="tip-time">EVENING (5-8 PM)</span></div><div class="tip-text">Begin wind-down routine. Keep bedroom cool (68-72°F).</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="concernModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title"><span>🆘</span><span>Report a Concern</span></div><button class="modal-close" onclick="closeModal('concern')">×</button></div>
+            <div class="modal-content">
+                <div class="form-group"><label class="form-label">Type of Concern</label><select class="form-select"><option>Select type...</option><option>Behavior Change</option><option>Physical Symptom</option><option>Sleep Problem</option><option>Fall or Injury</option></select></div>
+                <div class="form-group"><label class="form-label">Urgency</label><select class="form-select"><option>Low - Can wait</option><option>Medium - Within 24 hours</option><option>High - Need help today</option><option>Emergency</option></select></div>
+                <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" placeholder="Describe the concern..."></textarea></div>
+                <button class="form-submit" onclick="submitConcern()">Submit Concern</button>
+                <div class="emergency-card" style="margin-top:1rem">Emergency? Call 911. CHW Rosa: (520) 555-0147</div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="educationModal">
+        <div class="modal">
+            <div class="modal-header"><div class="modal-title"><span>📚</span><span>ADRD Education</span></div><button class="modal-close" onclick="closeModal('education')">×</button></div>
+            <div class="modal-content">
+                <div class="education-topic"><div class="education-topic-header"><div class="education-topic-title"><span>🧠</span>Understanding ADRD Stages</div><span>→</span></div><div class="education-topic-desc">Learn about progression and care adaptation.</div></div>
+                <div class="education-topic"><div class="education-topic-header"><div class="education-topic-title"><span>😤</span>Managing Challenging Behaviors</div><span>→</span></div><div class="education-topic-desc">Strategies for agitation and sundowning.</div></div>
+                <div class="education-topic"><div class="education-topic-header"><div class="education-topic-title"><span>💬</span>Communication Techniques</div><span>→</span></div><div class="education-topic-desc">Effective communication as abilities change.</div></div>
+                <div class="education-topic"><div class="education-topic-header"><div class="education-topic-title"><span>🌡️</span>Heat Safety for ADRD</div><span>→</span></div><div class="education-topic-desc">Prevention and warning signs.</div></div>
+                <div class="education-topic"><div class="education-topic-header"><div class="education-topic-title"><span>💚</span>Self-Care for Caregivers</div><span>→</span></div><div class="education-topic-desc">Recognizing burnout and self-care.</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let dataPoints = 0;
+        let actions = 0;
+        let crossEvents = 0;
+        let startTime = Date.now();
+        let hrHistory = [72, 71, 73, 72, 74, 71, 72, 73, 71, 72, 74, 73, 72, 71, 73, 72];
+        let currentLang = 'en';
+
+        // Translations
+        const translations = {
+            en: {
+                subtitle: "Adaptive Resilience Ecosystem", agentsActive: "5 Agents Active", caregiver: "Primary Caregiver",
+                patientInfo: "78 years old • Stage 5 ADRD • Monitoring since March 2024", daysTracked: "Days Tracked", routineScore: "Routine Score", alertsWeek: "Alerts This Week",
+                envAgent: "Environmental Sentinel", monitoring: "Monitoring", airQuality: "Air Quality", good: "Good", heatIndex: "Heat Index", caution: "Caution", uvIndex: "UV Index", high: "High", pollen: "Pollen", low: "Low", favorable: "Favorable",
+                heatAlert: "<strong>Heat Advisory:</strong> Temperature peaks at 3pm. Recommend indoor activities 1-5pm.",
+                vitalsAgent: "Vital Signs Monitor", streaming: "Streaming", heartRate: "Heart Rate", stable: "Stable range", sleepScore: "Sleep Score", wakeEpisodes: "2 wake episodes", activity: "Activity", steps: "steps", onTrack: "On track",
+                caregiverAgent: "Caregiver Navigator", ready: "Ready", viewSummary: "View Visit Summary", careTips: "Care Tips for Today", reportConcern: "Report a Concern", education: "ADRD Education", language: "Language:",
+                teleAgent: "Telemedicine Integration", synced: "Synced", fhirActive: "FHIR Sync Active", neurologist: "Neurologist • Telehealth", connected: "Connected", valleyClinic: "Valley Rural Clinic", primaryCare: "Primary Care",
+                communityAgent: "Community Connector", resources: "5 Resources", chwRole: "Community Health Worker • Available", contact: "Contact",
+                respiteCenter: "Desert Respite Center", respiteCare: "Respite Care", coolingCenter: "Community Cooling Center", heatRelief: "Heat Relief", supportGroup: "Caregiver Support Group", weeklyMeetings: "Weekly Meetings", tues6pm: "Tues 6pm", orchestration: "Agent Orchestration"
+            },
+            es: {
+                subtitle: "Ecosistema de Resiliencia Adaptativa", agentsActive: "5 Agentes Activos", caregiver: "Cuidadora Principal",
+                patientInfo: "78 años • ADRD Etapa 5 • Monitoreo desde marzo 2024", daysTracked: "Días Rastreados", routineScore: "Puntuación Rutina", alertsWeek: "Alertas Esta Semana",
+                envAgent: "Centinela Ambiental", monitoring: "Monitoreando", airQuality: "Calidad del Aire", good: "Buena", heatIndex: "Índice de Calor", caution: "Precaución", uvIndex: "Índice UV", high: "Alto", pollen: "Polen", low: "Bajo", favorable: "Favorable",
+                heatAlert: "<strong>Aviso de Calor:</strong> Temperatura máxima a las 3pm. Actividades en interiores 1-5pm.",
+                vitalsAgent: "Monitor de Signos Vitales", streaming: "Transmitiendo", heartRate: "Frecuencia Cardíaca", stable: "Rango estable", sleepScore: "Calidad de Sueño", wakeEpisodes: "2 despertares", activity: "Actividad", steps: "pasos", onTrack: "En camino",
+                caregiverAgent: "Navegador del Cuidador", ready: "Listo", viewSummary: "Ver Resumen", careTips: "Consejos de Hoy", reportConcern: "Reportar Preocupación", education: "Educación ADRD", language: "Idioma:",
+                teleAgent: "Integración Telemedicina", synced: "Sincronizado", fhirActive: "FHIR Activo", neurologist: "Neurólogo • Telesalud", connected: "Conectado", valleyClinic: "Clínica Rural Valley", primaryCare: "Atención Primaria",
+                communityAgent: "Conector Comunitario", resources: "5 Recursos", chwRole: "Promotora de Salud • Disponible", contact: "Contactar",
+                respiteCenter: "Centro de Respiro", respiteCare: "Cuidado de Respiro", coolingCenter: "Centro de Enfriamiento", heatRelief: "Alivio del Calor", supportGroup: "Grupo de Apoyo", weeklyMeetings: "Reuniones Semanales", tues6pm: "Mar 6pm", orchestration: "Orquestación"
+            }
+        };
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+        }
+
+        // Update datetime
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('datetime').textContent = now.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' });
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Update uptime
+        function updateUptime() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+            const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+            const s = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+        }
+        setInterval(updateUptime, 1000);
+
+        // Toast notification
+        function showToast(type, title, text) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { env: '🌡️', vitals: '❤️', care: '💬', tele: '🏥', comm: '🤝' };
+            toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-text">${text}</div></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        // Add activity log entry
+        function addLogEntry(logId, text) {
+            const log = document.getElementById(logId);
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const entry = document.createElement('div');
+            entry.className = 'activity-item';
+            entry.innerHTML = `<span class="activity-time">${time}</span><span class="activity-text">${text}</span>`;
+            log.insertBefore(entry, log.firstChild);
+            if (log.children.length > 5) log.removeChild(log.lastChild);
+        }
+
+        // Activate agent panel
+        function activateAgent(agent) {
+            const panel = document.getElementById(`${agent}Panel`);
+            const orch = document.getElementById(`orch${agent.charAt(0).toUpperCase() + agent.slice(1)}`);
+            panel.classList.add('active');
+            orch.classList.add('active');
+            setTimeout(() => { panel.classList.remove('active'); orch.classList.remove('active'); }, 2000);
+            actions++;
+            document.getElementById('totalActions').textContent = actions;
+        }
+
+        // Activate connector
+        function activateConnector(num) {
+            const conn = document.getElementById(`conn${num}`);
+            conn.classList.add('active');
+            setTimeout(() => conn.classList.remove('active'), 1500);
+            crossEvents++;
+            document.getElementById('crossEvents').textContent = crossEvents;
+        }
+
+        // Simulate Environmental Agent
+        function simEnv() {
+            activateAgent('env');
+            const aqi = 38 + Math.floor(Math.random() * 15);
+            const heat = 92 + Math.floor(Math.random() * 6);
+            const uv = 6 + Math.floor(Math.random() * 3);
+            
+            document.getElementById('aqiMetric').classList.add('updating');
+            document.getElementById('aqiValue').textContent = aqi;
+            document.getElementById('aqiStatus').textContent = aqi < 50 ? 'Good' : 'Moderate';
+            setTimeout(() => document.getElementById('aqiMetric').classList.remove('updating'), 1000);
+            
+            document.getElementById('heatMetric').classList.add('updating');
+            document.getElementById('heatValue').textContent = heat + '°F';
+            setTimeout(() => document.getElementById('heatMetric').classList.remove('updating'), 1000);
+            
+            document.getElementById('uvMetric').classList.add('updating');
+            document.getElementById('uvValue').textContent = uv;
+            setTimeout(() => document.getElementById('uvMetric').classList.remove('updating'), 1000);
+            
+            addLogEntry('envLog', `AQI: ${aqi}, Heat: ${heat}°F, UV: ${uv}`);
+            dataPoints += 3;
+            document.getElementById('dataPoints').textContent = dataPoints;
+            document.getElementById('totalDataPoints').textContent = dataPoints;
+            
+            if (Math.random() > 0.7) showToast('env', 'Environmental Update', `AQI ${aqi}, Heat Index ${heat}°F`);
+        }
+
+        // Simulate Vitals Agent
+        function simVitals() {
+            activateAgent('vitals');
+            const hr = 68 + Math.floor(Math.random() * 10);
+            const hrv = 42 + Math.floor(Math.random() * 8);
+            const steps = parseInt(document.getElementById('stepsValue').textContent.replace(/[^0-9]/g, '')) + Math.floor(Math.random() * 50);
+            
+            hrHistory.push(hr);
+            if (hrHistory.length > 16) hrHistory.shift();
+            updateHRChart();
+            
+            document.getElementById('hrCard').classList.add('updating');
+            document.getElementById('hrValue').innerHTML = `${hr} <span class="vital-unit">bpm</span>`;
+            setTimeout(() => document.getElementById('hrCard').classList.remove('updating'), 1000);
+            
+            document.getElementById('hrvCard').classList.add('updating');
+            document.getElementById('hrvValue').innerHTML = `${hrv} <span class="vital-unit">ms</span>`;
+            setTimeout(() => document.getElementById('hrvCard').classList.remove('updating'), 1000);
+            
+            document.getElementById('stepsCard').classList.add('updating');
+            document.getElementById('stepsValue').innerHTML = `${(steps/1000).toFixed(1)}k <span class="vital-unit">steps</span>`;
+            setTimeout(() => document.getElementById('stepsCard').classList.remove('updating'), 1000);
+            
+            addLogEntry('vitalsLog', `HR: ${hr} bpm, HRV: ${hrv} ms`);
+            dataPoints += 3;
+            document.getElementById('dataPoints').textContent = dataPoints;
+            document.getElementById('totalDataPoints').textContent = dataPoints;
+            
+            if (Math.random() > 0.8) showToast('vitals', 'Vitals Update', `Heart rate: ${hr} bpm`);
+        }
+
+        function updateHRChart() {
+            const chart = document.getElementById('hrChart');
+            chart.innerHTML = '';
+            const max = Math.max(...hrHistory);
+            const min = Math.min(...hrHistory);
+            hrHistory.forEach(val => {
+                const bar = document.createElement('div');
+                bar.className = 'hr-bar';
+                const height = 20 + ((val - min) / (max - min + 1)) * 80;
+                bar.style.height = height + '%';
+                chart.appendChild(bar);
+            });
+        }
+        updateHRChart();
+
+        // Simulate Caregiver Agent
+        function simCare() {
+            activateAgent('care');
+            const messages = [
+                'Analyzing behavioral patterns...',
+                'Generating hydration reminder...',
+                'Preparing afternoon activity suggestions...',
+                'Reviewing sleep data correlation...',
+                'Updating care recommendations...'
+            ];
+            addLogEntry('careLog', messages[Math.floor(Math.random() * messages.length)]);
+            dataPoints++;
+            document.getElementById('dataPoints').textContent = dataPoints;
+            document.getElementById('totalDataPoints').textContent = dataPoints;
+        }
+
+        // Simulate Telemedicine Agent
+        function simTele() {
+            activateAgent('tele');
+            const syncActions = ['FHIR bundle received', 'Vitals synced to EHR', 'Care plan updated', 'Medication list verified', 'Visit summary prepared'];
+            addLogEntry('teleLog', syncActions[Math.floor(Math.random() * syncActions.length)]);
+            document.getElementById('lastSync').textContent = 'Last sync: just now';
+            dataPoints += 2;
+            document.getElementById('dataPoints').textContent = dataPoints;
+            document.getElementById('totalDataPoints').textContent = dataPoints;
+            
+            if (Math.random() > 0.85) showToast('tele', 'FHIR Sync', 'Data synchronized with providers');
+        }
+
+        // Simulate Community Agent
+        function simComm() {
+            activateAgent('comm');
+            const actions = ['Checking resource availability...', 'Updated cooling center hours', 'Support group reminder set', 'CHW status: Available', 'New resource found nearby'];
+            addLogEntry('commLog', actions[Math.floor(Math.random() * actions.length)]);
+            dataPoints++;
+            document.getElementById('dataPoints').textContent = dataPoints;
+            document.getElementById('totalDataPoints').textContent = dataPoints;
+        }
+
+        // Cross-agent communication
+        function simCrossAgent() {
+            const scenarios = [
+                { from: 1, to: 3, desc: 'ENV→CARE: Heat alert triggered care recommendation' },
+                { from: 2, to: 3, desc: 'VITALS→CARE: Sleep data informing daily plan' },
+                { from: 2, to: 4, desc: 'VITALS→TELE: Syncing vitals to EHR' },
+                { from: 1, to: 5, desc: 'ENV→COMM: Heat advisory → cooling center alert' },
+                { from: 3, to: 4, desc: 'CARE→TELE: Visit summary prepared' }
+            ];
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            activateConnector(scenario.from);
+            setTimeout(() => activateConnector(scenario.to > 4 ? 4 : scenario.to), 500);
+            showToast('care', 'Cross-Agent Event', scenario.desc);
+        }
+
+        // Main simulation loop
+        function runSimulation() {
+            // Environmental - every 8 seconds
+            setInterval(simEnv, 8000);
+            // Vitals - every 5 seconds
+            setInterval(simVitals, 5000);
+            // Caregiver - every 10 seconds
+            setInterval(simCare, 10000);
+            // Telemedicine - every 12 seconds
+            setInterval(simTele, 12000);
+            // Community - every 15 seconds
+            setInterval(simComm, 15000);
+            // Cross-agent - every 20 seconds
+            setInterval(simCrossAgent, 20000);
+            
+            // Initial activations
+            setTimeout(simEnv, 1000);
+            setTimeout(simVitals, 2000);
+            setTimeout(simCare, 3000);
+            setTimeout(simTele, 4000);
+            setTimeout(simComm, 5000);
+        }
+
+        // Modal functions
+        function openModal(type) { document.getElementById(type + 'Modal').classList.add('active'); }
+        function closeModal(type) { document.getElementById(type + 'Modal').classList.remove('active'); }
+        function submitConcern() { showToast('care', 'Concern Submitted', 'Rosa Martinez will contact you soon'); closeModal('concern'); }
+        document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); }));
+
+        // Start simulation
+        runSimulation();
+    </script>
+</body>
+</html>
